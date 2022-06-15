@@ -1,0 +1,24 @@
+# LaTeX
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.log
+*.fls
+*.fdb_latexmk
+*.vtc
+*.out
+/*.pdf
+/*.xml
+*.gz
+*.toc
+
+!heuristic.pdf
+!exact.pdf
+
+# Nix related
+result
+default.nix
+
+# Emacs related
+.auctex-auto
