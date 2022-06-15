@@ -1,0 +1,9 @@
+%!TEX root = ../../exact.tex
+
+\textbf{Degree 2 Fold.}
+Consider a degree-two vertex $v \in B$ with $N(v) = \{u,w\}$ and $u \in B$.
+Observe that there is an optimal DFVS $D^*$ with either $D^* \cap \{u,v,w\} = \{v\}$ or $D^* \cap \{u,v,w\} = \{v,w\}$.
+To reduce the graph, we add a new vertex $t$ to $G$ and connect $t$ in such a way, that $N^+(t) = N^+(w) \cup N(u)$ and $N^-(t) = N^-(w) \cup N(u)$ and we remove $u,v$ and $w$ from the graph.
+Then we solve the instance on the reduced graph to obtain the solution $S$.
+If $t \in S$, the solution to the original instance is $(S \setminus \{t\}) \cup \{u,w\}$.
+Otherwise, the solution to the original instance is $S \cup \{v\}$.

@@ -1,0 +1,24 @@
+%!TEX root = ../exact.tex
+
+\section{Reduction rules}\label{sec:reductions}
+We apply a number of reductions known from the literature and introduce one rule which to the best of our knowledge is new.
+The known rules can be found in \cite{lemaic2008markov} and we adopt their nomenclature.
+Additionally, we adapt some reduction rules, that have already been used for the Vertex Cover problem.
+Before running the reduction rules, all nodes with self loops are collected into the solution and removed from the graph.
+Isolated nodes are removed as well.
+
+\input{content/reductions/pie}
+
+\input{content/reductions/dome}
+
+\input{content/reductions/core}
+
+\input{content/reductions/shortone}
+
+\input{content/reductions/vc}
+
+\input{content/reductions/vc-dome}
+
+\input{content/reductions/vc-degree-2}
+
+\input{content/reductions/vc-funnel}

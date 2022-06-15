@@ -1,0 +1,30 @@
+%!TEX root = ../exact.tex
+
+\section{Reduction to Vertex Cover}\label{sec:vertex_cover}
+
+After applying a set of reduction rules exhaustively we solve the remaining instance by repeatedly solving vertex cover instances.
+Initially, we choose the reduction rules Improved CORE and PIE.
+If this doesn't solve the instance within a few seconds, we proceed by using all reduction rules listed above.
+
+% \paragraph*{Solver Description}
+First note that if the remaining graph contains only bidirectional edges, we can easily reduce the DFVS instance to a vertex cover instance by turning bidirectional edges into undirected edges.
+Initially, we find an optimal vertex cover $S$ in $G[\text{PIE}]$. If $S$ is a DFVS, $S$ must be optimal.
+Otherwise, we find a set of vertex-disjoint cycles $C$ in $G-S - PIE$ using a DFS.
+All cycles in $C$ are not covered by $S$, so we add a gadget to each cycle to ensure, that in the modified graph, there is an optimal vertex cover, which includes a $v\in S$.
+Finally, we iterate on the modified graph until the vertex cover is also a DFVS. Note, that this can happen multiple times since our choice of $C$ does not guarantee that all cycles in $G$ are covered.
+
+% \paragraph*{Clique Gadget}
+Let $G = (V,E)$ be an undirected graph and let $S \subseteq V$. Our goal is to find the minimum vertex cover in $G$ that also contains a vertex in $S$. To achieve this, we add a clique of size $|S|$ to $G$ and connect it one-to-one with $S$. We call the modified graph $G'$.
+Consider any optimal vertex cover $C$ in $G'$. Then, $C$ contains at least $|S|-1$ vertices in the new clique.
+Also, $C$ must cover all edges between $V$ and the clique, so it must contain at least one vertex in $S$ or all vertices in the clique.
+If $C$ contains all vertices in the clique, we exchange one of these vertices for a vertex in $S$ and obtain an optimal vertex cover $C'$ in $G'$ with $C' \cap S \neq \emptyset$.
+Thus, $C'\cap V$ is an optimal vertex cover of $G$ that also contains a vertex of $S$.
+
+% \paragraph*{Speedup With Heuristic Solvers}
+Note that the exactness of our solver only relies on the optimality of the final vertex cover. Therefore, when the exact solver takes too long, we switch to a heuristic solver and verify our solution with an exact solver once we have covered all cycles in $G$. If the heuristic vertex cover was not optimal, we iterate further. Surprisingly, this did not occur on any public instance.
+
+% \paragraph*{Vertex Cover Solvers}
+To solve a vertex cover instance, we initially reduce it using the kernelization procedure, implemented by the winning solver of the 2019 PACE challenge \cite{Hespe2020WeGotYouCoveredTW}.
+When solving this instance heuristically, we use a local-search solver~\cite{Cai2013NuMVCAE} on this kernel.
+To solve the kernel exactly, we use a branch-and-reduce solver~\cite{pg21satreduce}, which we augment by implementing better upper bounds using the aforementioned local-search solver.
+

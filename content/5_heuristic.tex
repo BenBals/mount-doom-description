@@ -1,0 +1,82 @@
+%!TEX root = ../heuristic.tex
+
+\section{Solver Description}\label{sec:heuristic-solver}
+
+After exhaustively applying the reductions we described in~\Cref{sec:reductions}, we produce two solutions, one by a greedy procedure and another by a reduction to vertex cover.
+The better solution of both approaches is minimized further by applying 2-1 swaps until the timelimit is hit.
+
+\subsection{Greedy Routine}\label{ssec:greedy-routine}
+
+% The greedy routine is described more formally in~\Cref{alg:greedy-routine}.
+For the initial solution, we start with an empty set and greedily add to it the vertex of highest degree until we obtain a feasible DFVS. Checking for feasibility here means searching for a cycle in the graph. To speedup this procedure, we only search for a new cycle, once the old one is covered.
+Additionally, after a fixed number of nodes are taken into the solution, we reapply all reduction rules.
+After the initial solution is generated, we remove nodes that do not reintroduce a cycle when added back to the graph. This ensures that we create an inclusion-minimal solution.
+
+\subsection{Reduction to Vertex Cover}\label{ssec:vertex_cover}
+
+% \paragraph*{Solver Description}
+First note that if a graph contains only bidirectional edges, we can easily reduce the DFVS instance to a vertex cover instance by turning bidirectional edges into undirected edges.
+Initially, we find a vertex cover $S$ in $G[\text{PIE}]$ and check, whether $S$ is a DFVS for $G$.
+If not, we find a set of vertex-disjoint cycles $C$ in $G-S - PIE$ using a DFS.
+All cycles in $C$ are not covered by $S$, so we add a gadget to each cycle to ensure, that in the modified graph, there is an optimal vertex cover, which includes a $v\in S$.
+Finally, we iterate on the modified graph until the vertex cover is also a DFVS. Note, that this can happen multiple times since our choice of $C$ does not guarantee that all cycles in $G$ are covered.
+When we hit an internal timelimit before finding a feasible DFVS, we apply our greedy approach described in \Cref{ssec:greedy-routine} for the remaining graph.
+
+% \paragraph*{Clique Gadget}
+Let $G = (V,E)$ be an undirected graph and $S \subseteq V$ be a cycle. Our goal is to find the minimum vertex cover in $G$ that also contains a vertex in $S$. To achieve this, we add a clique of size $|S|$ to $G$ and connect it one-to-one with $S$. We call the modified graph $G'$.
+Consider any optimal vertex cover $C$ in $G'$. Then, $C$ contains at least $|S|-1$ vertices in the new clique.
+Also, $C$ must cover all edges between $V$ and the clique, so it must contain at least one vertex in $S$ or all vertices in the clique.
+If $C$ contains all vertices in the clique, we exchange one of these vertices for a vertex in $S$ and obtain an optimal vertex cover $C'$ in $G'$ with $C' \cap S \neq \emptyset$.
+Thus, $C'\cap V$ is a optimal vertex cover of $G$ that also contains a vertex of $S$.
+
+To solve the vertex cover instance, we first use a kernelization procedure implemented by the winning solver of the 2019 PACE challenge \cite{Hespe2020WeGotYouCoveredTW}.
+Then, we use a local-search solver~\cite{Cai2013NuMVCAE} on this kernel.
+
+%\begin{algorithm}
+%    \DontPrintSemicolon
+%    \SetAlgoLined
+%    \LinesNumbered
+%    \KwData{Graph \(G=(V, E)\), reduction interval \(k\)}
+%    \KwResult{DFVS \(S\subseteq V\)}
+%    reduce \(G\) exhaustively\;
+%    \(S\leftarrow\{\}\), \(G'\leftarrow G\)\;
+%    \tcp{find an initial solution}
+%    \While{\(G'\) has a cycle \(C\subseteq V'\)}{
+%        \(v\leftarrow \text{argmax}_{u\in C}{|N_{G'}^+(u)| + |N_{G'}^-(u)|}\)\;
+%        \(S\leftarrow S\cup\{v\}\)\;
+%        \(G'\leftarrow G'-\{v\}\)\;
+%        \If{\(|S|\) is a multiple of \(k\)}{
+%            reduce \(G'\) exhaustively\;
+%        }
+%    }
+%    \tcp{remove non-essential nodes}
+%    \For{\(v\in S\)}{
+%        \If{\(G-(S\backslash \{v\})\) has no cycle}{
+%            \(S\leftarrow S\backslash \{v\}\)\;
+%        }
+%    }
+%    improve solution using 2-1 swaps (optional)\;
+%
+%    \caption{Abstract description of greedy routine.}\label{alg:greedy-routine}
+%\end{algorithm}
+
+
+\subsection{2-1 swaps}
+We apply another greedy approach to improve our current solution, named 2-1 swaps. As the name suggests, its goal is to find 2 vertices from a given DFVS-solution and replace them with a vertex to form a smaller solution. The idea uses the notion of skew separator from Chen et al. \cite{Chen2008AFA}. 
+
+Consider a feasible and minimal solution set $S$ to the DFVS problem, i.e. for all $v \in S$ the set $S - v$ is infeasible. 
+Our goal is to find a triple of vertices $(v,w,u)$ where $v,w\in S$ and $u\notin S$ such that $\left(S-\{v,w\}\right)\cup \{u\}$ is a feasible solution.
+First, for each vertex $v \in S$, we find all vertices $u \in G-S$, called candidates, such that $\left(S-\{v\}\right)\cup \{u\}$ remains feasible. 
+Let the candidates of a given solution vertex $v$ be $C_v$. 
+
+In order to find $C_v$, we split the vertex $v$ into two vertices $v_{\text{out}}, v_{\text{in}}$ with out- or ingoing edges of $v$ only. Note that there is no edge between $v_{\text{out}}$ and $v_{\text{in}}$ in either direction. The candidates are now separator vertices for all $v_{out} \leadsto v_{in}$ paths in  $(G-S)\cup \{v_{out}, v_{in}\}$. 
+
+Note that in $G-S$, the vertices in $C_v$  have a topological ordering and since there is at least one cycle that is containing  $C_v$, the ordering is unique.
+% Note that in $G-S$, these candidates have a topological ordering and since all candidates for a given solution vertex cover the same set of cycles, this ordering is unique.
+In $G-C_v$, we then mark all vertices $u$ not reachable from $v$, with the first candidate (in increasing topological order) $c$ of $C_v$ so that $c \leadsto u$ in $G-C_v \cup \{c\}$, meaning that all candidates $c' \preceq c$ in $C_v$ cover all paths $v \leadsto u$. 
+%For another solution vertex $w \in S, w \neq v$ we can then check if any node $u \in C_w$ is also present in $C_v$ and if $u$ is before the first candidate of $C_v$ that reaches $w$, as computed above. 
+
+Let $w \in S, w \neq v$ be another solution vertex and $c_w \in C_v$ be the node that marked $w$. We can then check if there exists a node $y \in C_w \cap C_v$ for which $y \preceq c_w$ in the topological ordering of $C_v$ holds, meaning that all $v \leadsto w$ paths have the subpath $y \leadsto c_w$. 
+Therefore, $y$ prevents all paths from $v_{out} \leadsto v_{in}, w_{out}\leadsto w_{in}$, and $v_{out} \leadsto w_{in}$ in $G-S \cup \{v, w\}$, covering all cycles with $v$, $w$, or $v$ and $w$. Thereby, $S - \{v, w\} \cup \{y\}$ is still a feasible solution.
+
+Note that this procedure is conducted for both sides, i.e. the procedure will also take place for swapped roles of $v$ and $w$.

@@ -1,0 +1,18 @@
+%!TEX root = ../exact.tex
+
+\section{Preliminaries}\label{sec:prelims}
+
+Let $G = (V,E)$ be a directed graph.
+The Directed Feedback Vertex Set problem asks to find a minimum $S\subseteq V$, such that $G - S$ is acyclic.
+
+Let $v,w  \in V$.
+We define $N^+(v)$ as the outgoing neighbors of $v$ and $N^-(v)$ as the incoming neighbors.
+We call an edge $vw \in E$ bidirectional if $wv \in E$ as well.
+Let $\text{PIE}\subseteq E$ be the set of all bidirectional edges and let $B\subseteq V$ be the set of all vertices only incident to bidirectional edges.
+We define the bidirectional neighbors $N(v)$ as those which are incident using bidirectional edges.
+Additionally, we call $D\subseteq V$ a diclique, if all $u \in D$ have $D \setminus \{u\} \subseteq N(u)$.
+
+Finally, let $v\in V$ be given.
+Let $V' = V \setminus \{v\}$ and $E' = (E \cap (V' \times V')) \cup (N^-(v) \times N^+(v))$.
+We call  $G'= (V', E')$ the graph obtained from $G$ by short cutting $v$.
+In light of the DFVS, this is equivalent to adding the assumption $v \notin S$.

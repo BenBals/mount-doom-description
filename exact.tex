@@ -1,0 +1,49 @@
+
+\documentclass[a4paper,USenglish,cleveref, autoref, thm-restate, authorcolumns]{template/lipics-v2021}
+%This is a template for producing LIPIcs articles. 
+%See lipics-v2021-authors-guidelines.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+%for section-numbered lemmas etc., use "numberwithinsect"
+%for enabling cleveref support, use "cleveref"
+%for enabling autoref support, use "autoref"
+%for anonymousing the authors (e.g. for double-blind review), add "anonymous"
+%for enabling thm-restate support, use "thm-restate"
+%for enabling a two-column layout for the author/affilation part (only applicable for > 6 authors), use "authorcolumns"
+%for producing a PDF according the PDF/A standard, add "pdfa"
+
+\include{header}
+
+\title{Mount Doom: An Exact Solver for Directed Feedback Vertex Set} %TODO PTlease add
+\supplement{Source code (Software): \url{https://doi.org/10.5281/zenodo.6624560}\\
+Source code (Software): \url{https://github.com/BenBals/mount-doom/tree/exact}}
+
+% \titlerunning{Mount Doom} %TODO optional, please use if title is longer than one line
+
+\begin{document}
+
+\maketitle
+
+%TODO mandatory: add short abstract of the document
+\begin{abstract}
+In this document we describe the techniques we used and implemented for our submission to the Parameterized Algorithms and Computational Experiments Challenge (PACE) 2022. The given problem is \emph{Directed Feedback Vertex Set} (DFVS), where you are given a directed graph $G=(V,E)$ and want to find a minimum $S\subseteq V$ such that $G-S$ is acyclic.
+We approach this problem by first exhaustively applying a set of reduction rules. 
+In order to find a minimum DFVS on this remaining instance, we create and solve a series of Vertex Cover instances.
+\end{abstract}
+
+% \input{content/1_introduction}
+\input{content/preliminaries}
+\input{content/2_reductions}
+\input{content/3_vertex_cover}
+
+%%
+%% Bibliography
+%%
+
+%% Please use bibtex, 
+
+\bibliography{references}
+
+\appendix
+
+\end{document}

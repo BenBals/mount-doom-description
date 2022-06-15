@@ -1,0 +1,11 @@
+%!TEX root = ../../exact.tex
+
+\textbf{Funnel Fold.}
+Consider a vertex $v \in B$ with $w \in N(v)$ such that $N(v) \setminus w$ is a diclique.
+Observe that there is an optimal DFVS $D^*$ with either $D^* \cap \{v,w\} = \{v\}$ or $D^* \cap \{v,w\} = \{w\}$.
+To reduce the instance, we first add $C = N(u)\cap N(w)$ to the solution and remove these vertices from the graph.
+Now we add edges, such that each $x \in N(v) \setminus C$ is a bidirectional neighbor of every $y \in N(w) \setminus C$.
+Finally, we remove $u, w$ from the graph.
+Then we solve the instance on the reduced graph to obtain the solution $S$.
+If $N(v) \setminus \{w\} \subseteq S$, the solution to the original instance is $S \cup \{w\}$.
+Otherwise, the solution to the original instance is $S \cup \{v\}$.
