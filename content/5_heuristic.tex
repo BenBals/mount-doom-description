@@ -60,23 +60,76 @@ Then, we use a local-search solver~\cite{Cai2013NuMVCAE} on this kernel.
 %    \caption{Abstract description of greedy routine.}\label{alg:greedy-routine}
 %\end{algorithm}
 
-
 \subsection{2-1 swaps}
-We apply another greedy approach to improve our current solution, named 2-1 swaps. As the name suggests, its goal is to find 2 vertices from a given DFVS-solution and replace them with a vertex to form a smaller solution. The idea uses the notion of skew separator from Chen et al. \cite{Chen2008AFA}. 
+We apply a local-search approach to improve our current solution, named 2-1 swaps. As the name suggests, its goal is to find 2 vertices from a given DFVS-solution and replace them with one vertex to form a smaller solution. The idea uses the notion of skew separator from Chen et al.~\cite{Chen2008AFA}. 
 
-Consider a feasible and minimal solution set $S$ to the DFVS problem, i.e. for all $v \in S$ the set $S - v$ is infeasible. 
-Our goal is to find a triple of vertices $(v,w,u)$ where $v,w\in S$ and $u\notin S$ such that $\left(S-\{v,w\}\right)\cup \{u\}$ is a feasible solution.
+Consider a feasible and minimal solution set $S$ to the DFVS problem, i.e.~for all $v \in S$ the set $S - v$ is infeasible. 
+Our goal is to find $v,w\in S$ and $u\notin S$ such that $\left(S-\{v,w\}\right)\cup \{u\}$ is a feasible solution.
+Whenever we find such a triple $(v,w, u)$, we swap $\{v, w\}$ with $u$ in $S$ and repeat the procedure.
+
+We now describe how to find such a triple.
 First, for each vertex $v \in S$, we find all vertices $u \in G-S$, called candidates, such that $\left(S-\{v\}\right)\cup \{u\}$ remains feasible. 
 Let the candidates of a given solution vertex $v$ be $C_v$. 
 
-In order to find $C_v$, we split the vertex $v$ into two vertices $v_{\text{out}}, v_{\text{in}}$ with out- or ingoing edges of $v$ only. Note that there is no edge between $v_{\text{out}}$ and $v_{\text{in}}$ in either direction. The candidates are now separator vertices for all $v_{out} \leadsto v_{in}$ paths in  $(G-S)\cup \{v_{out}, v_{in}\}$. 
+In order to find $C_v$, we split the vertex $v$ into two vertices $v_{\text{out}}, v_{\text{in}}$ with out- or ingoing edges of $v$ only. Let $G^v:= (G-S)\cup \{v_{out}, v_{in}\}$.  Note that there is no edge between $v_{\text{out}}$ and $v_{\text{in}}$ in either direction in $G^v$. The candidates are now the set of all vertices $x$ such that $x$ hits all $v_{out}\leadsto v_{in}$ paths in $G^v$.
 
-Note that in $G-S$, the vertices in $C_v$  have a topological ordering and since there is at least one cycle that is containing  $C_v$, the ordering is unique.
+Note that in $G-S$, the vertices in $C_v$  have a topological ordering.
+Also, notice that each cycle in $(G-S)\cup \{v\}$ has to be hit by each vertex in $C_v$.
+%Also, there exist at least one cycle in $(G-S) \cup \{v\}$ by minimality of $S$.
+This implies that $C_v$ has a unique topological ordering in $G-S$.
+Let $\tau_v$ be this ordering.
 % Note that in $G-S$, these candidates have a topological ordering and since all candidates for a given solution vertex cover the same set of cycles, this ordering is unique.
-In $G-C_v$, we then mark all vertices $u$ not reachable from $v$, with the first candidate (in increasing topological order) $c$ of $C_v$ so that $c \leadsto u$ in $G-C_v \cup \{c\}$, meaning that all candidates $c' \preceq c$ in $C_v$ cover all paths $v \leadsto u$. 
-%For another solution vertex $w \in S, w \neq v$ we can then check if any node $u \in C_w$ is also present in $C_v$ and if $u$ is before the first candidate of $C_v$ that reaches $w$, as computed above. 
 
-Let $w \in S, w \neq v$ be another solution vertex and $c_w \in C_v$ be the node that marked $w$. We can then check if there exists a node $y \in C_w \cap C_v$ for which $y \preceq c_w$ in the topological ordering of $C_v$ holds, meaning that all $v \leadsto w$ paths have the subpath $y \leadsto c_w$. 
-Therefore, $y$ prevents all paths from $v_{out} \leadsto v_{in}, w_{out}\leadsto w_{in}$, and $v_{out} \leadsto w_{in}$ in $G-S \cup \{v, w\}$, covering all cycles with $v$, $w$, or $v$ and $w$. Thereby, $S - \{v, w\} \cup \{y\}$ is still a feasible solution.
+We say that the ordered triple $(v,w,u)$ is a swap triple if there is no $v_{out}\leadsto v_{in}$ path in $G^v$, there is no $w_{out}\leadsto w_{in}$ path in $G^w$, and there is no $v\leadsto w$ path in $(G-\left(S\cup\{u\}\right))\cup \{v,w\}$.
+Observe that a valid 2-1 swap is possible if and only if there exists such a swap triple.
+For each vertex $v$, we now find a $w$ and $u$ that give a swap triple $(v,w,u)$ if such a $w$ and $u$ exist, as follows.
+Observe that $(v,w,u)$ is a swap triple if and only if $u\in C_v\cap C_w$ and $u$ hits all $v\leadsto w$ paths in $(G-S)\cup \{v,w\}$.
+Let $W$ be the set of all vertices not reachable from $v$ in $G-C_v$.
+For each $w\in W$, let $c_w$ be the first vertex in the ordering $\tau_v$ such that there is a $c_w\leadsto w$ path in $(G-C_v)\cup \{c_w\}$.
+If there is a vertex $u$ in $C_v\cap C_w$ such that $u\preceq c_w$ in $\tau_v$ then we return $(v,w,u)$ as a swap triple.
 
-Note that this procedure is conducted for both sides, i.e. the procedure will also take place for swapped roles of $v$ and $w$.
+First, we prove that such a $(v,w,u)$ is indeed a swap triple.
+Suppose this is not the case.
+Since $u\in C_u\cap C_w$, this means that 
+there is a $v\leadsto w$ path $P$ in $(G-S)\cup\{v,w\}$ not hit by $u$.
+The path $P$ contains at least one vertex from $C_v$ as $w$ was not reachable from $v$ in $G-C_v$.
+Let $c$ be the last vertex in $P$ that is from $C_v$.
+Then there is a $c\leadsto w$ path in $(G-C_v)\cup\{c\}$,
+and hence $c_w\preceq c$ by the choice of $c_w$.
+This implies that $u\preceq c$ by choice of $u$.
+Let $P_1$ be the sub-path $v\leadsto c$ of $P$.
+Since $u$ does not hit $P$, the path $P_1$ does not contain $u$.
+We know there is at least one cycle in $(G-S)\cup \{v\}$ containing $C_v\cup \{v\}$, and hence there should be a $c\leadsto v$ path in $(G-S)\cup \{v\}$, say $P_2$.
+The concatenation $P_1\cup P_2$ gives a cycle in $G-S\cup\{v\}$ and hence needs to be hit by each vertex in $C_v$, in particular $u$.
+This means that $u$ should hit $P_2$, but this contradicts that $u\preceq c$ in $\tau_v$.
+
+
+Next, we prove that if there is a swap triple then our procedure will find one.
+Suppose we do not find a swap triple and there is a swap triple $(v,w,u)$.
+Let us consider the processing of $u$ in our procedure.
+We have $w\in W$ as $u$ hits all $v\leadsto w$ paths in $(G-S)\cup \{v,w\}$.
+If $u\preceq c_w$ then since $u\in C_v\cap C_w$, we would have found the swap triple  $(v,w,u)$.
+Thus $c_w\prec u$.
+Then $u$ cannot be in any $v\leadsto c_w$ path in $(G-S)\cup \{v,w\}$.
+But then $u$ has to hit all $c_w\leadsto w$ paths in $(G-S)\cup \{v,w\}$ as $u$ hits all $v\leadsto w$ paths in $(G-S)\cup \{v,w\}$.
+This is a contradiction to the choice of $c_w$.
+
+%\subsection{2-1 swaps}
+%We apply another greedy approach to improve our current solution, named 2-1 swaps. As the name suggests, its goal is to find 2 vertices from a given DFVS-solution and replace them with a vertex to form a smaller solution. The idea uses the notion of skew separator from Chen et al. \cite{Chen2008AFA}. 
+%
+%Consider a feasible and minimal solution set $S$ to the DFVS problem, i.e. for all $v \in S$ the set $S - v$ is infeasible. 
+%Our goal is to find a triple of vertices $(v,w,u)$ where $v,w\in S$ and $u\notin S$ such that $\left(S-\{v,w\}\right)\cup \{u\}$ is a feasible solution.
+%First, for each vertex $v \in S$, we find all vertices $u \in G-S$, called candidates, such that $\left(S-\{v\}\right)\cup \{u\}$ remains feasible. 
+%Let the candidates of a given solution vertex $v$ be $C_v$. 
+%
+%In order to find $C_v$, we split the vertex $v$ into two vertices $v_{\text{out}}, v_{\text{in}}$ with out- or ingoing edges of $v$ only. Note that there is no edge between $v_{\text{out}}$ and $v_{\text{in}}$ in either direction. The candidates are now separator vertices for all $v_{out} \leadsto v_{in}$ paths in  $(G-S)\cup \{v_{out}, v_{in}\}$. 
+%
+%Note that in $G-S$, the vertices in $C_v$  have a topological ordering and since there is at least one cycle that is containing  $C_v$, the ordering is unique.
+%% Note that in $G-S$, these candidates have a topological ordering and since all candidates for a given solution vertex cover the same set of cycles, this ordering is unique.
+%In $G-C_v$, we then mark all vertices $u$ not reachable from $v$, with the first candidate (in increasing topological order) $c$ of $C_v$ so that $c \leadsto u$ in $G-C_v \cup \{c\}$, meaning that all candidates $c' \preceq c$ in $C_v$ cover all paths $v \leadsto u$. 
+%%For another solution vertex $w \in S, w \neq v$ we can then check if any node $u \in C_w$ is also present in $C_v$ and if $u$ is before the first candidate of $C_v$ that reaches $w$, as computed above. 
+%
+%Let $w \in S, w \neq v$ be another solution vertex and $c_w \in C_v$ be the node that marked $w$. We can then check if there exists a node $y \in C_w \cap C_v$ for which $y \preceq c_w$ in the topological ordering of $C_v$ holds, meaning that all $v \leadsto w$ paths have the subpath $y \leadsto c_w$. 
+%Therefore, $y$ prevents all paths from $v_{out} \leadsto v_{in}, w_{out}\leadsto w_{in}$, and $v_{out} \leadsto w_{in}$ in $G-S \cup \{v, w\}$, covering all cycles with $v$, $w$, or $v$ and $w$. Thereby, $S - \{v, w\} \cup \{y\}$ is still a feasible solution.
+%
+%Note that this procedure is conducted for both sides, i.e. the procedure will also take place for swapped roles of $v$ and $w$.
